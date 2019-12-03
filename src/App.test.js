@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { Provider, useSelector } from "react-redux";
 import { render } from "@testing-library/react";
@@ -15,13 +15,23 @@ function TestComponent() {
   const value = useSelector(state => state.value);
   const valueString = useSelector(getValueString);
   const valueStringFresh = useSelector(state => getValueString(state));
+  const [foundInconsistency, setFoundInconsistency] = useState(false);
+
   console.log({ value, valueString, valueStringFresh });
+
+  useEffect(() => {
+    if (valueString !== valueStringFresh) {
+      setFoundInconsistency(true);
+    }
+  }, [valueString, valueStringFresh]);
+
   return (
-    <span>
-      Actual value: {value}
-      Memoized selector value: {valueString}
-      Fresh selector value: {valueStringFresh}
-    </span>
+    <ul>
+      <li>Actual value: {value}</li>
+      <li>Memoized selector value: {valueString}</li>
+      <li>Fresh selector value: {valueStringFresh}</li>
+      <li>Found inconsistency? {foundInconsistency ? "true" : "false"}</li>
+    </ul>
   );
 }
 
@@ -38,14 +48,24 @@ it("renders consistent Redux state", () => {
 
   expect(container).toMatchInlineSnapshot(`
     <div>
-      <span>
-        Actual value: 
-        1
-        Memoized selector value: 
-        value = 1
-        Fresh selector value: 
-        value = 1
-      </span>
+      <ul>
+        <li>
+          Actual value:
+          1
+        </li>
+        <li>
+          Memoized selector value:
+          value = 1
+        </li>
+        <li>
+          Fresh selector value:
+          value = 1
+        </li>
+        <li>
+          Found inconsistency?
+          false
+        </li>
+      </ul>
     </div>
   `);
 
@@ -57,14 +77,24 @@ it("renders consistent Redux state", () => {
 
   expect(container).toMatchInlineSnapshot(`
     <div>
-      <span>
-        Actual value: 
-        5
-        Memoized selector value: 
-        value = 5
-        Fresh selector value: 
-        value = 5
-      </span>
+      <ul>
+        <li>
+          Actual value:
+          5
+        </li>
+        <li>
+          Memoized selector value:
+          value = 5
+        </li>
+        <li>
+          Fresh selector value:
+          value = 5
+        </li>
+        <li>
+          Found inconsistency?
+          true
+        </li>
+      </ul>
     </div>
   `);
 });
